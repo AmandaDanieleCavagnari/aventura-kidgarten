@@ -1,7 +1,22 @@
 const storyText = document.getElementById('story-text');
 const choicesContainer = document.getElementById('choices-container');
+let playerChoices = []; // Array para armazenar as escolhas do jogador
 
-// Um objeto que armazena todas as "cenas" do jogo
+const endings = {
+    bloody: {
+        text: "O teto da sala desaba, mas não empoeira. Em vez disso, pedaços de carne e sangue jorram por todos os lados. Você ouve a Sra. Vigilante gargalhando de forma assustadora. Um último som estrondoso vindo de fora e a voz de Pedro te avisa: 'Fim da linha, Leo.'",
+        choices: [
+            { text: "Recomeçar", nextScene: "start" }
+        ]
+    },
+    glorious: {
+        text: "Você aponta para a Sra. Vigilante com a mão estendida, e ela cai com a sua forma verdadeira: a pele se esvai, e o que fica é uma criatura esquelética. Você e seus colegas escapam e vocês se tornam famosos por darem um fim ao demônio da escola.",
+        choices: [
+            { text: "Recomeçar", nextScene: "start" }
+        ]
+    }
+};
+
 const scenes = {
     start: {
         text: "Você é **Leo**, um novo aluno na sua nova escola. A **Sra. Vigilante**, sua professora, aponta para uma carteira vazia no fundo da sala. 'Esta era a carteira do Pedro. Sente-se e tente não fazer muito barulho.'",
@@ -54,48 +69,76 @@ const scenes = {
     try_door: {
         text: "Você corre para a porta e tenta abri-la, mas ela está trancada. Você ouve passos lentos e pesados vindo em sua direção...",
         choices: [
-            { text: "Reiniciar o jogo", nextScene: "start" }
+            { text: "Enfrentar o que está vindo", nextScene: "bloody_ending_choice" },
+            { text: "Se esconder debaixo da carteira", nextScene: "glorious_ending_choice" }
         ]
     },
     show_note: {
         text: "Você tenta mostrar o bilhete para um colega, mas ele olha para você com uma expressão vazia. 'Não tem nada na sua mão', ele diz, e os outros alunos começam a rir.",
         choices: [
-            { text: "Reiniciar o jogo", nextScene: "start" }
+            { text: "Lutar", nextScene: "bloody_ending_choice" },
+            { text: "Persistir", nextScene: "glorious_ending_choice" }
         ]
     },
     ask_for_help: {
         text: "Você se aproxima da Sra. Vigilante. 'Por favor, me ajude!' Ela sorri e estende a mão para você, mas em vez de dedos, ela tem garras de metal. 'Eu adoraria...'",
         choices: [
-            { text: "Reiniciar o jogo", nextScene: "start" }
+            { text: "Lutar", nextScene: "bloody_ending_choice" },
+            { text: "Ignorar as garras", nextScene: "glorious_ending_choice" }
         ]
     },
     kick_it: {
         text: "Você chuta a carteira com força. Há um grito alto e uma sombra passa correndo por debaixo da sua mesa e vai para a frente da sala. A Sra. Vigilante olha para a sombra e diz: 'Ora, ora. Parece que a visita já chegou. Que falta de educação...'",
         choices: [
-            { text: "Reiniciar o jogo", nextScene: "start" }
+            { text: "Lutar", nextScene: "bloody_ending_choice" },
+            { text: "Fugir", nextScene: "glorious_ending_choice" }
         ]
     },
     call_for_help: {
         text: "Você grita por ajuda, mas a Sra. Vigilante não reage. Ninguém se mexe. Apenas a voz dela ecoa em sua cabeça: 'Não tem ajuda aqui...'",
         choices: [
-            { text: "Reiniciar o jogo", nextScene: "start" }
+            { text: "Reconhecer a realidade", nextScene: "bloody_ending_choice" },
+            { text: "Lutar contra a ilusão", nextScene: "glorious_ending_choice" }
+        ]
+    },
+    // Novas cenas que levam aos finais
+    bloody_ending_choice: {
+        text: "Uma névoa vermelha toma conta da sala e a professora se transforma em uma figura monstruosa. É tarde demais.",
+        choices: [
+            { text: "Ver o final", nextScene: "bloody" }
+        ]
+    },
+    glorious_ending_choice: {
+        text: "Uma luz branca começa a brilhar da sua mão e o chão treme. A professora olha para você, aterrorizada.",
+        choices: [
+            { text: "Ver o final", nextScene: "glorious" }
         ]
     }
 };
 
 function startGame() {
+    playerChoices = []; // Limpa as escolhas do jogador ao iniciar
     showScene('start');
 }
 
 function showScene(sceneName) {
-    const scene = scenes[sceneName];
+    const scene = sceneName.includes('_ending_choice') ? scenes[sceneName] : scenes[sceneName];
+
+    if (!scene) {
+        console.error("Cena não encontrada:", sceneName);
+        return;
+    }
+
     storyText.innerHTML = scene.text;
-    choicesContainer.innerHTML = ''; // Limpa os botões anteriores
+    choicesContainer.innerHTML = '';
 
     scene.choices.forEach(choice => {
         const button = document.createElement('button');
         button.textContent = choice.text;
-        button.onclick = () => showScene(choice.nextScene);
+        button.onclick = () => {
+            playerChoices.push(choice.text); // Registra a escolha
+            showScene(choice.nextScene);
+        };
         choicesContainer.appendChild(button);
     });
 }
